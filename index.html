@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>金流與結算｜協作流程、Data Flow 與流程圖</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-alt: #f1f5f9;
+      --text: #0f172a;
+      --muted: #475569;
+      --border: #e2e8f0;
+      --primary: #2563eb;
+      --primary-light: #eff6ff;
+      --accent: #0f766e;
+      --warn-bg: #fffbeb;
+      --warn-border: #f59e0b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "PingFang TC", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+      color: #fff;
+      padding: 2.25rem 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .container {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 0 1.25rem;
+    }
+
+    header h1 {
+      margin: 0 0 0.5rem;
+      font-size: 1.75rem;
+      font-weight: 700;
+    }
+
+    header p {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.98rem;
+    }
+
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    nav .nav-inner {
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      padding: 0.65rem 0;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 0.4rem 0.85rem;
+      border-radius: 999px;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+
+    nav a:hover {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    main {
+      padding: 2rem 0 3.5rem;
+    }
+
+    section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.75rem;
+      margin-bottom: 1.75rem;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    }
+
+    h2 {
+      margin: 0 0 1rem;
+      font-size: 1.3rem;
+      color: var(--text);
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--primary-light);
+    }
+
+    h3 {
+      margin: 1.35rem 0 0.6rem;
+      font-size: 1.05rem;
+      color: var(--primary);
+    }
+
+    p {
+      margin: 0 0 0.9rem;
+    }
+
+    ul, ol {
+      margin: 0.4rem 0 1rem;
+      padding-left: 1.4rem;
+    }
+
+    li {
+      margin-bottom: 0.45rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-top: 0.75rem;
+    }
+
+    .card {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+    }
+
+    .card strong {
+      display: block;
+      margin-bottom: 0.3rem;
+      color: var(--text);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      margin: 0.75rem 0 1rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.65rem 0.8rem;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--surface-alt);
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    code {
+      background: var(--surface-alt);
+      color: #b91c1c;
+      padding: 0.12rem 0.4rem;
+      border-radius: 5px;
+      font-size: 0.88em;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    pre.flow-box {
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 1.15rem;
+      border-radius: 10px;
+      overflow-x: auto;
+      font-size: 0.86rem;
+      line-height: 1.55;
+      margin: 0.75rem 0 1.1rem;
+    }
+
+    .mermaid-box {
+      background: #ffffff;
+      border: 1px dashed #cbd5e1;
+      border-radius: 10px;
+      padding: 1rem;
+      overflow-x: auto;
+      margin: 0.75rem 0 1.25rem;
+    }
+
+    .callout {
+      background: var(--warn-bg);
+      border-left: 4px solid var(--warn-border);
+      padding: 0.85rem 1rem;
+      border-radius: 0 8px 8px 0;
+      margin-top: 1rem;
+      font-size: 0.92rem;
+      color: #78350f;
+    }
+
+    .badge {
+      display: inline-block;
+      background: var(--primary-light);
+      color: var(--primary);
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      margin-bottom: 0.75rem;
+    }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+      padding-bottom: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <span class="badge" style="background: rgba(255,255,255,0.18); color: #fff;">金流與結算模組梳理</span>
+      <h1>金流定義、外部金流商協作、Data Flow 與流程圖</h1>
+      <p>涵蓋交易收付、定時對帳排程、退款與人工例外處理之系統與營運規格參考</p>
+    </div>
+  </header>
+
+  <nav>
+    <div class="container nav-inner">
+      <a href="#definition">一、金流是什麼</a>
+      <a href="#collaboration">二、外部金流商協作</a>
+      <a href="#dataflow">三、Data Flow</a>
+      <a href="#diagrams">四、Mermaid 流程圖</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <!-- 一、金流是什麼 -->
+    <section id="definition">
+      <h2>一、後台中的「金流」是什麼？</h2>
+      <p>
+        在「金流與結算／金流對帳」後台脈絡下，<strong>金流</strong>指的是交易過程中<strong>資金的收付、對帳核銷、退款處理與撥款結算機制</strong>，涵蓋買家付款、第三方支付或銀行處理、平台核對帳務，到最終撥款或退款的整條資金流轉。
+      </p>
+
+      <div class="grid-2">
+        <div class="card">
+          <strong>功能分頁定位</strong>
+          <ul>
+            <li><code>金流對帳</code>：核對每筆付款狀態、排查掉單與執行人工退款補記。</li>
+            <li><code>待撥款 / 提領撥款</code>：處理符合條件款項的撥款或提領。</li>
+            <li><code>財務報表</code>：彙整帳務收支與結算明細。</li>
+            <li><code>收款金鑰</code>：管理串接金流商的 API 憑證與設定。</li>
+          </ul>
+        </div>
+        <div class="card">
+          <strong>核心交易狀態</strong>
+          <ul>
+            <li><code>待付款</code>：尚未完成付款或結果待同步，排程會定時查詢；逾時未付則釋放保留。</li>
+            <li><code>已付款</code>：金流商已確認收款成功。</li>
+            <li><code>失敗/逾時</code>：如逾期未付款或已取消，不進入正常撥款。</li>
+            <li><code>待人工退款 / 已退款</code>：已收款需退還者，完成外部退款並補記後轉為已退款。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 二、外部金流商協作 -->
+    <section id="collaboration">
+      <h2>二、流程梳理：如何與外部金流商協作？</h2>
+      <p>
+        協作核心在於讓平台的<strong>訂單狀態</strong>與金流商的<strong>金流狀態</strong>在正常與異常情境下保持最終一致性，並建立明確的例外處理 SOP。
+      </p>
+
+      <h3>1. 交易生命週期對齊表</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>流程階段</th>
+              <th>平台動作</th>
+              <th>外部金流商動作</th>
+              <th>協作確認重點</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>建立交易</strong></td>
+              <td>建立交易紀錄、產生金流交易編號、鎖定庫存／額度</td>
+              <td>接收請求，回傳付款頁或 Token</td>
+              <td>確認單號映射與重試防重複規則</td>
+            </tr>
+            <tr>
+              <td><strong>支付與回調</strong></td>
+              <td>等待付款結果（<code>待付款</code>）</td>
+              <td>買家付款後發送非同步 Webhook 通知</td>
+              <td>對齊付款逾時時間（TTL）與回調重試策略</td>
+            </tr>
+            <tr>
+              <td><strong>主動查詢補單</strong></td>
+              <td>排程定時呼叫金流商 Query API 查詢</td>
+              <td>回傳單筆交易最新狀態</td>
+              <td>確認排程輪詢頻率與 API Rate Limit</td>
+            </tr>
+            <tr>
+              <td><strong>退款處理</strong></td>
+              <td>發起自動退款 API 或人工至金流後台操作並補記</td>
+              <td>執行刷退／匯退並回傳結果</td>
+              <td>確認支援全額／部分退款及 API 退刷期限</td>
+            </tr>
+            <tr>
+              <td><strong>日結對帳</strong></td>
+              <td>下載對帳檔並與內部帳務核銷</td>
+              <td>產出每日結算／對帳報表</td>
+              <td>確認日結切帳時間（Cut-off Time）</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>2. 技術防呆與營運例外協作</h3>
+      <ul>
+        <li><strong>雙重確認機制</strong>：結合 Webhook 非同步通知與定時排程 Query API 主動查證，避免網路波動或回調漏接導致狀態卡住。</li>
+        <li><strong>冪等性與簽章驗證</strong>：所有回調與查詢更新需驗證簽章並做冪等檢查，防止重複通知造成重複入帳或重複出貨。</li>
+        <li><strong>掉單與人工退款 SOP</strong>：買家反映已付款但後台仍為<code>待付款</code>時，持金流交易編號至金流商後台查證；遇到<code>待人工退款</code>或<code>退款中(自動)</code>卡住時，先停止自動重試，於金流商後台或銀行完成實際退款後再回平台補記。</li>
+      </ul>
+    </section>
+
+    <!-- 三、Data Flow -->
+    <section id="dataflow">
+      <h2>三、Data Flow（資料流）</h2>
+      <p>
+        關鍵資料鍵值包含 <code>Order ID</code>（訂單編號）、<code>Payment Txn ID</code>（金流交易編號）、<code>Gateway Ref ID</code>（金流商外部單號）、<code>Amount</code> 與交易狀態。
+      </p>
+
+      <h3>1. 付款與定時對帳主資料流</h3>
+      <pre class="flow-box">[買家 / 消費者]
+      │
+      ▼ (1) 發起結帳／選擇支付方式
+[平台前台 / 訂單服務]
+      │  建立交易紀錄（Status: 待付款）、產生金流交易編號、鎖定庫存/額度
+      ▼ (2) 呼叫建立付款請求（帶入 Order ID, Txn ID, Amount, Sign/金鑰）
+[外部金流商 / 銀行]
+      │
+      ├───(3a) 買家完成付款 ──► 發送非同步 Webhook 通知 ──► [平台 API / Webhook Receiver]
+      │                                                               │ 驗簽 + 冪等檢查
+      │                                                               ▼
+      │                                                      更新金流狀態為「已付款」
+      │                                                      觸發訂單成立／出貨／撥款排程
+      │
+      ├───(3b) Webhook 漏接/延遲 ──► [平台定時對帳排程 (Cron Job)]
+      │                                 定期撈取「待付款」單 ──► 呼叫金流商 Query API 查證
+      │                                 若已付款：回寫「已付款」；若逾時未付：改「失敗/逾時」並釋放保留
+      │
+      └───(3c) 取消／逾時未付 ──► 更新金流狀態為「失敗/逾時」（如：逾期未付款、已取消）
+                                      保留資源釋放，不進入撥款流程</pre>
+
+      <h3>2. 退款與人工例外資料流</h3>
+      <pre class="flow-box">[觸發退款條件]（如：失效訂單已收款、訂單退款明細、卡住的訂單全額退款）
+      │
+      ▼
+[金流對帳模組] 寫入狀態：「待人工退款」（或進入「退款中(自動)」排程）
+      │
+      ├─── 路徑 A：系統自動重試 ──► 排程呼叫金流退款 API ──► 成功：更新為「已退款」
+      │                                                    └── 失敗/卡住：維持「待人工退款」
+      │
+      └─── 路徑 B：人工介入處理
+             1. 營運/財務人員於後台操作「停止自動重試，改人工」（若有自動重試中）
+             2. 登入【外部金流商後台】或【銀行網銀】實際執行退款／匯退（或查證已退款）
+             3. 回到【金流對帳】畫面執行「補記」──► 更新狀態為「已退款」與退款時間/紀錄</pre>
+    </section>
+
+    <!-- 四、Mermaid 流程圖 -->
+    <section id="diagrams">
+      <h2>四、Mermaid 流程圖</h2>
+
+      <h3>1. 付款與定時對帳流程圖</h3>
+      <div class="mermaid-box">
+        <pre class="mermaid">
+flowchart TD
+    Start([買家發起結帳]) --> CreateOrder[平台建立交易紀錄<br/>狀態：<b>待付款</b><br/>鎖定庫存 / 額度]
+    CreateOrder --> CallGateway[呼叫外部金流商建立付款請求<br/>帶入訂單編號、金流交易編號、簽章]
+    CallGateway --> GatewayPay{外部金流商處理付款}
+
+    GatewayPay -->|付款成功<br/>發送 Webhook| Webhook[平台接收非同步通知<br/>驗簽 + 冪等性檢查]
+    Webhook --> Paid[更新狀態：<b>已付款</b>]
+    Paid --> Settlement[進入後續履約 / 待撥款流程]
+
+    GatewayPay -->|買家取消 / 付款失敗| Failed[更新狀態：<b>失敗/逾時</b><br/>釋放保留庫存 / 額度]
+
+    GatewayPay -->|未收到回調<br/>維持「待付款」| CronJob[系統對帳排程<br/>定時向金流商 Query API 查詢]
+    CronJob --> QueryResult{查詢結果判定}
+    QueryResult -->|金流端已收款| Paid
+    QueryResult -->|逾時未付款| Failed
+    QueryResult -->|尚未付款且未逾時| WaitOrCS{買家是否反映已付款？}
+
+    WaitOrCS -->|否| CronJob
+    WaitOrCS -->|是| ManualCheck[營運/客服持金流交易編號<br/>至金流商後台查證]
+    ManualCheck -->|查證確實已收款| Paid
+    ManualCheck -->|查證未收款| BuyerBank([請買家聯繫發卡行])
+        </pre>
+      </div>
+
+      <h3>2. 退款與人工例外處理流程圖</h3>
+      <div class="mermaid-box">
+        <pre class="mermaid">
+flowchart TD
+    Trigger([觸發退款條件：<br/>失效訂單已收款 / 訂單退款明細 / 卡住訂單全額退]) --> CheckType{退款方式判定}
+
+    CheckType -->|系統自動退款排程| AutoRefund[狀態：<b>退款中(自動)</b><br/>排程呼叫金流退款 API]
+    AutoRefund --> AutoResult{API 退款是否成功？}
+    AutoResult -->|成功| Refunded([更新狀態：<b>已退款</b>])
+    AutoResult -->|失敗 / 卡住<br/>無法直接補記| StopAuto[營運於後台點擊：<br/><b>「停止自動重試，改人工」</b>]
+
+    CheckType -->|需人工處理| PendingManual[狀態：<b>待人工退款</b>]
+    StopAuto --> PendingManual
+
+    PendingManual --> ExternalRefund[營運/財務登入<b>外部金流商後台</b>或<b>銀行</b><br/>實際執行退款給買家（或查證已退款）]
+    ExternalRefund --> ConfirmExternal{確認外部實際已退款？}
+    ConfirmExternal -->|是| Backfill[回到平台「金流對帳」頁面執行<b>補記</b>]
+    Backfill --> Refunded
+    ConfirmExternal -->|否| ExternalRefund
+        </pre>
+      </div>
+
+      <div class="callout">
+        <strong>提醒：</strong>本頁面流程圖依截圖後台狀態與說明整理；若實際系統包含「部分退款」或「多階段請款／授權」，需再依合作金流商 API 規格補充節點。
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    金流與結算流程梳理文件（HTML 版）
+  </footer>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "default",
+      flowchart: {
+        useMaxWidth: true,
+        htmlLabels: true,
+        curve: "basis"
+      }
+    });
+  </script>
+</body>
+</html>
